@@ -7,6 +7,8 @@
 from typing import List
 from ..Script import Script
 
+from UM.Application import Application
+
 class FilamentChange(Script):
 
     _layer_keyword = ";LAYER:"
@@ -106,7 +108,11 @@ class FilamentChange(Script):
                 color_change = color_change + (" E%.2f" % initial_retract)
 
             if later_retract is not None and later_retract > 0.:
-                color_change = color_change + (" L%.2f" % later_retract)
+                gcode_flavor = Application.getInstance().getGlobalContainerStack().getProperty("machine_gcode_flavor", "value")
+                param = "U" if gcode_flavor == "RepRap (Marlin/Sprinter)" else "L"
+                # Reprap uses 'L': https://reprap.org/wiki/G-code#M600:_Filament_change_pause
+                # Marlin uses 'U' https://marlinfw.org/docs/gcode/M600.html
+                color_change = color_change + (" %s%.2f" % (param, later_retract))
 
             if x_pos is not None:
                 color_change = color_change + (" X%.2f" % x_pos)
